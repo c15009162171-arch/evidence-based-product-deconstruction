@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>[当前产品名称] 证据驱动拆解</title>
+  <style>
+    :root {
+      --fact: #0f766e;
+      --infer: #4f46e5;
+      --unknown: #6b7280;
+      --risk: #c2410c;
+      --suggest: #b45309;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #e5e7eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+    nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 20px 16px;
+      border-right: 1px solid var(--line);
+      background: var(--card);
+    }
+    nav a { display: block; color: var(--muted); text-decoration: none; padding: 4px 0; font-size: 14px; }
+    nav a:hover, nav a:focus { color: var(--text); }
+    main { padding: 32px 28px 80px; max-width: 1100px; }
+    h1, h2, h3 { line-height: 1.3; }
+    h1 { font-size: 28px; margin: 0 0 8px; }
+    h2 { font-size: 22px; margin: 40px 0 12px; padding-top: 8px; }
+    h3 { font-size: 18px; margin: 24px 0 8px; }
+    .lede { color: var(--muted); margin-bottom: 20px; }
+    .summary, .legend, .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 12px 0;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; font-size: 14px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .fact { color: var(--fact); }
+    .infer { color: var(--infer); }
+    .unknown { color: var(--unknown); }
+    .risk { color: var(--risk); }
+    .suggest { color: var(--suggest); }
+    .scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+    th { background: #f1f5f9; font-size: 13px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+    .filters button {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .filters button[aria-pressed="true"] { background: #111827; color: #fff; }
+    .diagram {
+      overflow-x: auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .diagram svg { min-width: 720px; max-width: none; }
+    .node-fact { fill: #ccfbf1; stroke: var(--fact); }
+    .node-infer { fill: #e0e7ff; stroke: var(--infer); }
+    .node-unknown { fill: #f3f4f6; stroke: var(--unknown); }
+    .node-risk { fill: #ffedd5; stroke: var(--risk); }
+    img.evidence { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+    @media print {
+      nav, .filters { display: none; }
+      .layout, main { display: block; max-width: none; padding: 0; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav aria-label="报告目录">
+      <strong>[当前产品名称]</strong>
+      <a href="#s1">1. 执行摘要</a>
+      <a href="#s2">2. 产品类型判断卡</a>
+      <a href="#s3">3. 查看范围与证据就绪度</a>
+      <a href="#s4">4. 证据索引与缺口</a>
+      <a href="#s5">5. 用户层</a>
+      <a href="#s6">6. 技术层</a>
+      <a href="#s7">7. 模型层</a>
+      <a href="#s8">8. 数据层</a>
+      <a href="#s9">9. 四层跨层流程</a>
+      <a href="#s10">10. 生产者—消费者</a>
+      <a href="#s11">11. 状态冲突与风险</a>
+      <a href="#s12">12. 痛点与机会</a>
+      <a href="#s13">13. 事实 / 推断 / 未知 / 建议</a>
+      <a href="#s14">14. 继续验证的问题</a>
+    </nav>
+    <main>
+      <header class="summary">
+        <h1>[当前产品名称] 证据驱动拆解</h1>
+        <p class="lede">产品类型：[主类型 / 次类型] · 证据就绪度：[可完整执行 / 仅可局部执行] · 范围：[本次范围]</p>
+        <p>关键结论：事实 [N] · 推断 [N] · 未知 [N] · 建议 [N]</p>
+      </header>
+
+      <div class="legend" aria-label="证据等级图例">
+        <span><i class="dot" style="background:var(--fact)"></i>页面/代码事实</span>
+        <span><i class="dot" style="background:var(--infer)"></i>合理推断</span>
+        <span><i class="dot" style="background:var(--unknown)"></i>尚未确认</span>
+        <span><i class="dot" style="background:var(--risk)"></i>风险/冲突</span>
+        <span><i class="dot" style="background:var(--suggest)"></i>产品建议</span>
+      </div>
+
+      <section id="s1">
+        <h2>1. 执行摘要</h2>
+        <p>【页面/代码事实】用当前产品的可观察结果概括本次拆解。</p>
+        <p>【合理推断】写推导链，不要写成事实。</p>
+        <p>【尚未确认】列出缺口。</p>
+      </section>
+
+      <section id="s2">
+        <h2>2. 产品类型判断卡</h2>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>字段</th><th>内容</th></tr></thead>
+            <tbody>
+              <tr><td>主类型</td><td></td></tr>
+              <tr><td>次类型</td><td></td></tr>
+              <tr><td>核心用户任务</td><td></td></tr>
+              <tr><td>输入—处理—输出</td><td></td></tr>
+              <tr><td>决策权分配</td><td></td></tr>
+              <tr><td>判断证据</td><td>E01</td></tr>
+              <tr><td>置信度</td><td>高 / 中 / 低</td></tr>
+              <tr><td>加重检查主题</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="s3">
+        <h2>3. 查看范围与证据就绪度</h2>
+        <p>对象、目标、范围、深度、授权边界。</p>
+        <p>总体就绪度：可完整执行 / 仅可局部执行 / 不可执行</p>
+      </section>
+
+      <section id="s4">
+        <h2>4. 证据索引与缺口</h2>
+        <div class="filters" role="group" aria-label="筛选证据">
+          <button type="button" data-filter="all" aria-pressed="true">全部</button>
+          <button type="button" data-filter="fact">事实</button>
+          <button type="button" data-filter="infer">推断</button>
+          <button type="button" data-filter="unknown">未知</button>
+          <button type="button" data-filter="suggest">建议</button>
+        </div>
+        <div class="scroll">
+          <table id="evidence-table">
+            <thead>
+              <tr>
+                <th>编号</th><th>层级</th><th>等级</th><th>内容</th><th>来源</th><th>支持结论</th><th>局限</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-grade="fact">
+                <td>E01</td><td>用户层</td><td>页面/代码事实</td><td>替换为当前可见内容</td><td>页面/截图/代码</td><td></td><td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>缺口：列出尚未覆盖的路径、层级或字段。</p>
+      </section>
+
+      <section id="s5">
+        <h2>5. 用户层</h2>
+        <div class="card">证据就绪卡：已有 / 缺少 / 可回答 / 不可回答 / 状态</div>
+        <h3>用户旅程</h3>
+        <div class="diagram">
+          <svg viewBox="0 0 960 280" role="img" aria-label="用户、界面、结果泳道">
+            <text x="16" y="40">用户</text>
+            <text x="16" y="130">界面/系统</text>
+            <text x="16" y="220">结果</text>
+            <rect class="node-fact" x="120" y="16" width="160" height="48" rx="6"/>
+            <text x="140" y="46">起点 E01</text>
+            <rect class="node-fact" x="360" y="106" width="180" height="48" rx="6"/>
+            <text x="376" y="136">确认门 E0X</text>
+            <polygon class="node-risk" points="640,20 710,44 640,68 570,44"/>
+            <text x="612" y="48">失败?</text>
+            <rect class="node-infer" x="780" y="196" width="150" height="48" rx="6"/>
+            <text x="796" y="226">结果 推断</text>
+            <line x1="280" y1="40" x2="360" y2="130" stroke="#111827"/>
+            <line x1="540" y1="130" x2="570" y2="44" stroke="#111827"/>
+            <line x1="710" y1="44" x2="780" y2="220" stroke="#111827"/>
+          </svg>
+        </div>
+        <p>正常 / 修改 / 异常路径，以及确认门、反馈、痛点。节点上的 E0X 必须换成真实编号。</p>
+      </section>
+
+      <section id="s6">
+        <h2>6. 技术层</h2>
+        <div class="card">证据就绪卡：已有 / 缺少 / 可回答 / 不可回答 / 状态</div>
+        <p>只写界面、网络、代码或日志中可见的模块与状态机。</p>
+      </section>
+
+      <section id="s7">
+        <h2>7. 模型层</h2>
+        <div class="card">证据就绪卡：已有 / 缺少 / 可回答 / 不可回答 / 状态</div>
+        <p>无 AI/模型证据时写明“不适用或证据不足”，不要编造 Agent。</p>
+      </section>
+
+      <section id="s8">
+        <h2>8. 数据层</h2>
+        <div class="card">证据就绪卡：已有 / 缺少 / 可回答 / 不可回答 / 状态</div>
+        <p>记录已出现实体、生产者、消费者、版本和证据等级。不要猜测未出现的数据库表。</p>
+      </section>
+
+      <section id="s9">
+        <h2>9. 四层跨层流程</h2>
+        <div class="diagram">
+          <svg viewBox="0 0 960 220" role="img" aria-label="四层跨层流程">
+            <text x="20" y="36">用户层</text>
+            <text x="20" y="86">技术层</text>
+            <text x="20" y="136">模型层</text>
+            <text x="20" y="186">数据层</text>
+            <rect class="node-fact" x="140" y="12" width="160" height="40" rx="6"/>
+            <text x="156" y="38">动作 E0X</text>
+            <rect class="node-fact" x="360" y="62" width="180" height="40" rx="6"/>
+            <text x="376" y="88">处理 E0X</text>
+            <rect class="node-unknown" x="580" y="112" width="160" height="40" rx="6"/>
+            <text x="596" y="138">模型 未知</text>
+            <rect class="node-fact" x="780" y="162" width="150" height="40" rx="6"/>
+            <text x="796" y="188">写入 E0X</text>
+            <line x1="300" y1="32" x2="360" y2="82" stroke="#111827"/>
+            <line x1="540" y1="82" x2="580" y2="132" stroke="#111827"/>
+            <line x1="740" y1="132" x2="780" y2="182" stroke="#111827"/>
+          </svg>
+        </div>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>链路步骤</th><th>用户层</th><th>技术层</th><th>模型层</th><th>数据层</th><th>输入状态</th><th>输出状态</th><th>证据</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td>E01</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="s10">
+        <h2>10. 数据生产者—消费者关系</h2>
+        <p>用当前产品已出现的对象画出血缘，不要引入未见到的表名。</p>
+      </section>
+
+      <section id="s11">
+        <h2>11. 状态冲突与风险</h2>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>冲突编号</th><th>来源 A</th><th>来源 B</th><th>可确认事实</th><th>影响</th><th>当前处理</th><th>待补证据</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>C01</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="s12">
+        <h2>12. 痛点、用户想法与产品机会</h2>
+        <p>【产品建议】与现状分区书写。</p>
+      </section>
+
+      <section id="s13">
+        <h2>13. 事实 / 推断 / 未知 / 建议</h2>
+        <ul>
+          <li class="fact">【页面/代码事实】</li>
+          <li class="infer">【合理推断】</li>
+          <li class="unknown">【尚未确认】</li>
+          <li class="suggest">【产品建议】</li>
+        </ul>
+      </section>
+
+      <section id="s14">
+        <h2>14. 最值得继续验证的问题</h2>
+        <ol>
+          <li>用最小补证回答一个尚未确认的问题。</li>
+        </ol>
+      </section>
+    </main>
+  </div>
+  <script>
+    (function () {
+      var table = document.getElementById("evidence-table");
+      if (!table) return;
+      var buttons = document.querySelectorAll(".filters button");
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          var grade = button.getAttribute("data-filter");
+          buttons.forEach(function (item) {
+            item.setAttribute("aria-pressed", item === button ? "true" : "false");
+          });
+          table.querySelectorAll("tbody tr").forEach(function (row) {
+            row.hidden = grade !== "all" && row.getAttribute("data-grade") !== grade;
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
