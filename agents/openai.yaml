@@ -1,0 +1,4 @@
+interface:
+  display_name: "证据驱动产品拆解"
+  short_description: "基于真实产品证据完成四层架构拆解并统一输出HTML报告"
+  default_prompt: "使用 $evidence-based-product-deconstruction 基于我提供的产品证据完成系统化产品拆解，并生成 HTML 报告。"
